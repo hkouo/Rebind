@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hkouo.rebind.mapper.FileMapper">
+    <insert id="insertFile" parameterType="com.hkouo.rebind.model.FileMetadata" useGeneratedKeys="true" keyProperty="idx">
+        INSERT INTO file_metadata (
+            original_name,
+            stored_name,
+            file_path,
+            file_type,
+            file_size,
+            uploader_user_idx
+        ) VALUES (
+                     #{originalName},
+                     #{storedName},
+                     #{filePath},
+                     #{fileType},
+                     #{fileSize},
+                     #{uploaderUserIdx}
+                 )
+    </insert>
+</mapper>

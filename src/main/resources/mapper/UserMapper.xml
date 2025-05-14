@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hkouo.rebind.mapper.UserMapper">
+
+    <resultMap id="userWithRolesMap" type="com.hkouo.rebind.model.User">
+        <id property="idx" column="idx"/>
+        <result property="uniqueName" column="unique_name"/>
+        <result property="userId" column="user_id"/>
+        <result property="password" column="password"/>
+        <result property="email" column="email"/>
+        <result property="nickname" column="nickname"/>
+        <result property="isActive" column="is_active"/>
+        <result property="loginFailCount" column="login_fail_count"/>
+        <result property="lastLoginAt" column="last_login_at"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+
+        <!-- 조인된 UserRole 리스트를 매핑 -->
+        <collection property="roles" ofType="com.hkouo.rebind.model.UserRole">
+            <id property="idx" column="role_idx"/>
+            <result property="userIdx" column="user_idx"/>
+            <result property="role" column="role"/>
+        </collection>
+    </resultMap>
+
+
+    <select id="findByUserId" resultMap="userWithRolesMap">
+        SELECT u.*,
+               r.idx AS role_idx,
+               r.user_idx,
+               r.role
+        FROM users u
+        LEFT JOIN user_roles r ON u.idx = r.user_idx
+        WHERE u.user_id = #{userId}
+    </select>
+
+    <select id="isUserIdDuplicate" resultType="int">
+        SELECT COUNT(*) FROM users WHERE user_id = #{userId}
+    </select>
+
+    <insert id="insertUser" parameterType="com.hkouo.rebind.model.User" useGeneratedKeys="true" keyProperty="idx">
+        INSERT INTO users (unique_name, user_id, password, email, nickname, is_active, created_at, updated_at)
+        VALUES (#{uniqueName}, #{userId}, #{password}, #{email}, #{nickname}, true, NOW(), NOW())
+    </insert>
+
+    <insert id="insertUserRole" parameterType="map">
+        INSERT INTO user_roles (user_idx, role)
+        VALUES (#{userIdx}, #{role})
+    </insert>
+
+
+
+</mapper>

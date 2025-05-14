@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hkouo.rebind.mapper.ScenarioMapper">
+
+    <resultMap id="scenarioWithParticipantsMap" type="com.hkouo.rebind.model.Scenario">
+        <id property="idx" column="idx"/>
+        <result property="title" column="title"/>
+        <result property="creatorUserIdx" column="creator_user_idx"/>
+        <result property="gameMasterIdx" column="game_master_idx"/>
+        <result property="gameStatus" column="game_status"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <association property="participant" javaType="com.hkouo.rebind.model.ScenarioParticipant">
+            <id property="idx" column="participant_idx"/>
+            <result property="joinedAt" column="joined_at"/>
+            <result property="isReady" column="is_ready"/>
+            <result property="isHost" column="is_host"/>
+        </association>
+    </resultMap>
+
+
+    <select id="findScenariosForUser" resultMap="scenarioWithParticipantsMap">
+        SELECT
+            s.*,
+            sp.idx AS participant_idx,
+            sp.joined_at,
+            sp.is_ready,
+            sp.is_host,
+            sp.last_accessed_at
+        FROM scenarios s
+                 JOIN scenario_participants sp ON s.idx = sp.scenario_idx
+        WHERE sp.user_idx = #{userIdx}
+        ORDER BY (sp.last_accessed_at IS NULL), sp.last_accessed_at DESC
+            LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- resources/mapper/ScenarioMapper.xml -->
+    <insert id="insertScenario" useGeneratedKeys="true" keyProperty="idx">
+        INSERT INTO scenarios (title, creator_user_idx, game_status, created_at, updated_at)
+        VALUES (#{title}, #{creatorUserIdx}, 'WAITING', NOW(), NOW())
+    </insert>
+
+    <insert id="insertScenarioParticipants">
+        INSERT INTO scenario_participants (scenario_idx, user_idx, is_host, joined_at)
+        VALUES
+        <foreach collection="participants" item="userIdx" separator=",">
+            (#{scenarioIdx}, #{userIdx}, false, NOW())
+        </foreach>
+    </insert>
+
+    <insert id="insertScenarioCharacter" parameterType="com.hkouo.rebind.model.ScenarioCharacter">
+        INSERT INTO scenario_characters
+            (scenario_idx, name, type, user_idx, hp, is_assignable)
+        VALUES
+            (#{scenarioIdx}, #{name}, #{type}, #{userIdx}, #{hp}, #{isAssignable})
+    </insert>
+
+    <insert id="insertScenarioCharacters" parameterType="com.hkouo.rebind.model.ScenarioCharacterForm">
+        INSERT INTO scenario_characters (
+            scenario_idx,
+            name,
+            type,
+            user_idx,
+            hp,
+            is_assignable
+        )
+        VALUES
+        <foreach collection="characters" item="character" separator=",">
+            (
+            #{scenarioIdx},
+            #{character.name},
+            #{character.type},
+            #{character.userIdx},
+            #{character.hp},
+            #{character.isAssignable}
+            )
+        </foreach>
+    </insert>
+
+    <insert id="insertScenarioChapters" parameterType="com.hkouo.rebind.model.ScenarioChapterForm">
+        INSERT INTO scenario_chapters (
+        scenario_idx, chapter_order, title, intro_script, ending_script,
+        enable_chat, enable_phone, enable_search, next_chapter_idx
+        )
+        VALUES
+        <foreach collection="chapters" item="chapter" separator=",">
+            (#{scenarioIdx}, #{chapter.chapterOrder}, #{chapter.title}, #{chapter.introScript},
+            #{chapter.endingScript}, #{chapter.enableChat}, #{chapter.enablePhone},
+            #{chapter.enableSearch}, #{chapter.nextChapterIdx})
+        </foreach>
+    </insert>
+
+</mapper>

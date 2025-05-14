@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  mariadb:
+    image: mariadb:latest
+    container_name: my-mariadb
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: root1234
+      MARIADB_DATABASE: escape_game_db
+      MARIADB_USER: escape_user
+      MARIADB_PASSWORD: escape1234
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - escape_net
+
+  redis:
+    image: redis:latest
+    container_name: my-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - escape_net
+
+  file-server:
+    container_name: my-file-server
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: nginx:alpine
+    volumes:
+      - ./uploads:/usr/share/nginx/html/uploads
+    ports:
+      - "8081:80"
+    networks:
+      - escape_net
+
+volumes:
+  mariadb_data:
+
+networks:
+  escape_net:
+    driver: bridge
