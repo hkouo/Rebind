@@ -27,15 +27,25 @@ services:
       - escape_net
 
   file-server:
-    container_name: my-file-server
-    build:
-      context: .
-      dockerfile: Dockerfile
     image: nginx:alpine
-    volumes:
-      - ./uploads:/usr/share/nginx/html/uploads
+    container_name: my-file-server
+    restart: always
     ports:
       - "8081:80"
+    volumes:
+      - ./uploads:/usr/share/nginx/html/uploads
+    networks:
+      - escape_net
+
+  upload-server:
+    build:
+      context: ./upload-server
+    container_name: upload-server
+    restart: always
+    ports:
+      - "8082:8080"
+    volumes:
+      - ./uploads:/uploads
     networks:
       - escape_net
 

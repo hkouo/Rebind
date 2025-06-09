@@ -20,6 +20,7 @@
         <table border="1">
             <thead>
             <tr>
+                <th>시나리오 이미지</th>
                 <th>시나리오 이름</th>
                 <th>상태</th>
                 <th>참여일</th>
@@ -29,6 +30,7 @@
             <tbody>
             <c:forEach var="scenario" items="${scenarios}">
                 <tr>
+                    <td><img src="${scenario.imagePath}" style="width: 200px; height: auto;" /></td>
                     <td>${scenario.title}</td>
                     <td>${scenario.gameStatus}</td>
                     <td>

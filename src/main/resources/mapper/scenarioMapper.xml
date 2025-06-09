@@ -12,6 +12,7 @@
         <result property="gameStatus" column="game_status"/>
         <result property="createdAt" column="created_at"/>
         <result property="updatedAt" column="updated_at"/>
+        <result property="imagePath" column="image_path"/>
         <association property="participant" javaType="com.hkouo.rebind.model.ScenarioParticipant">
             <id property="idx" column="participant_idx"/>
             <result property="joinedAt" column="joined_at"/>
@@ -37,9 +38,9 @@
     </select>
 
     <!-- resources/mapper/ScenarioMapper.xml -->
-    <insert id="insertScenario" useGeneratedKeys="true" keyProperty="idx">
-        INSERT INTO scenarios (title, creator_user_idx, game_status, created_at, updated_at)
-        VALUES (#{title}, #{creatorUserIdx}, 'WAITING', NOW(), NOW())
+    <insert id="insertScenario" parameterType="com.hkouo.rebind.model.Scenario" useGeneratedKeys="true" keyProperty="idx">
+        INSERT INTO scenarios (title, creator_user_idx, game_status, created_at, updated_at, image_path )
+        VALUES (#{title}, #{creatorUserIdx}, 'WAITING', NOW(), NOW(), #{imagePath} )
     </insert>
 
     <insert id="insertScenarioParticipants">
@@ -49,6 +50,19 @@
             (#{scenarioIdx}, #{userIdx}, false, NOW())
         </foreach>
     </insert>
+
+    <insert id="insertScenarioParticipantsByUserIds">
+        INSERT INTO scenario_participants (scenario_idx, user_idx)
+        SELECT
+        #{scenarioIdx},
+        u.idx
+        FROM users u
+        WHERE u.user_id IN
+        <foreach item="userId" collection="userIdList" open="(" separator="," close=")">
+            #{userId}
+        </foreach>
+    </insert>
+
 
     <insert id="insertScenarioCharacter" parameterType="com.hkouo.rebind.model.ScenarioCharacter">
         INSERT INTO scenario_characters

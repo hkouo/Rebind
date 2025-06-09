@@ -20,7 +20,7 @@
         </select>
       </label>
       <label>체력: <input type="number" name="characters[0].hp" value="100"/></label>
-      <label>선택 가능: <input type="checkbox" name="characters[0].assignable" checked/></label>
+      <label>선택 가능: <input type="checkbox" name="characters[0].isAssignable" checked/></label>
     </div>
   </div>
 
@@ -31,23 +31,24 @@
 <script>
   let count = 1;
   function addCharacter() {
+    const index = count++;
     const div = document.createElement("div");
     div.className = "character";
     div.innerHTML = `
-      <label>이름: <input type="text" name="characters[${count}].name" required/></label>
-      <label>타입:
-        <select name="characters[${count}].type">
-          <option value="PC">PC</option>
-          <option value="NPC">NPC</option>
-        </select>
-      </label>
-      <label>체력: <input type="number" name="characters[${count}].hp" value="100"/></label>
-      <label>선택 가능: <input type="checkbox" name="characters[${count}].assignable" checked/></label>
-      <br><br>
-    `;
+    <label>이름: <input type="text" name="characters[` + index + `].name" required/></label>
+    <label>타입:
+      <select name="characters[` + index + `].type">
+        <option value="PC">PC</option>
+        <option value="NPC">NPC</option>
+      </select>
+    </label>
+    <label>체력: <input type="number" name="characters[` + index + `].hp" value="100"/></label>
+    <label>선택 가능: <input type="checkbox" name="characters[` + index + `].isAssignable" checked/></label>
+    <br><br>
+  `;
     document.getElementById("characters").appendChild(div);
-    count++;
   }
+
 </script>
 </body>
 </html>

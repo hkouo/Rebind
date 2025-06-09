@@ -19,6 +19,8 @@ public interface ScenarioMapper {
 
     void insertScenarioParticipants(@Param("scenarioIdx") Long scenarioIdx,
                                     @Param("participants") List<Long> participantUserIdxList);
+    void insertScenarioParticipantsByUserIds(Long scenarioIdx, List<String> userIdList);
+
 
     void insertScenarioCharacter(ScenarioCharacter character);
     void insertScenarioCharacters(ScenarioCharacterForm form);

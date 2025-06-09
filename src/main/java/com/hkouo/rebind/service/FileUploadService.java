@@ -3,12 +3,17 @@ package com.hkouo.rebind.service;
 import com.hkouo.rebind.mapper.FileMapper;
 import com.hkouo.rebind.model.FileMetadata;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.File;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 @Service
@@ -26,32 +31,45 @@ public class FileUploadService {
         this.fileMapper = fileMapper;
     }
 
-    public FileMetadata storeFile(MultipartFile multipartFile, Long uploaderUserIdx) throws IOException {
-        String datePath = LocalDate.now().toString().replace("-", "/"); // yyyy/MM/dd
-        String saveDirPath = baseDir + "/" + datePath;
-        File saveDir = new File(saveDirPath);
-        if (!saveDir.exists()) {
-            saveDir.mkdirs();
+
+    public String uploadToExternalServer(MultipartFile file, Long uploaderUserIdx) throws IOException {
+        String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
+        String storedName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+
+        String uploadUrl = "http://localhost:8082/upload?subdir=" + today + "&filename=" + storedName;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType(file.getContentType()));
+
+        HttpEntity<byte[]> requestEntity = new HttpEntity<>(file.getBytes(), headers);
+
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<String> response = restTemplate.exchange(
+                uploadUrl, HttpMethod.PUT, requestEntity, String.class
+        );
+
+        if (!response.getStatusCode().is2xxSuccessful()) {
+            throw new IOException("업로드 실패: " + response.getStatusCode());
         }
 
-        String originalName = multipartFile.getOriginalFilename();
-        String storedName = UUID.randomUUID() + "_" + originalName;
-        File saveFile = new File(saveDir, storedName);
-        multipartFile.transferTo(saveFile);
+        String fileUrl = "http://localhost:8081/uploads/" + today + "/" + storedName;
 
+        // ✅ file_metadata 테이블에 저장
         FileMetadata metadata = new FileMetadata();
-        metadata.setOriginalName(originalName);
+        metadata.setOriginalName(file.getOriginalFilename());
         metadata.setStoredName(storedName);
-        metadata.setFilePath(datePath + "/" + storedName);
-        metadata.setFileType(multipartFile.getContentType());
-        metadata.setFileSize(multipartFile.getSize());
+        metadata.setFilePath(today);
+        metadata.setFileType(file.getContentType());
+        metadata.setFileSize(file.getSize());
         metadata.setUploaderUserIdx(uploaderUserIdx);
 
         fileMapper.insertFile(metadata);
-        return metadata;
+
+        return fileUrl;
+
+
     }
 
-    public String getFileUrl(FileMetadata metadata) {
-        return urlPrefix + "/" + metadata.getFilePath();
-    }
+
+
 }

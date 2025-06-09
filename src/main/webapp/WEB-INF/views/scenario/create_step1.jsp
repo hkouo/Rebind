@@ -11,23 +11,14 @@
   <label>시나리오 제목:</label><br>
   <input type="text" name="title" required/><br><br>
 
-  <label>시나리오 대표 이미지:</label><br>
-  <input type="file" name="imageFile" accept="image/*"/><br><br>
+  <label>대표 이미지 업로드:</label><br>
+  <input type="file" name="imageFile" accept="image/*" required/><br><br>
 
-  <!-- 참여자 ID 입력: 쉼표로 구분 -->
-  <label>참여자 ID 목록 (쉼표로 구분):</label><br>
-  <input type="text" id="participantInput"/><br>
-  <input type="hidden" id="participantUserIdxList" name="participantUserIdxList"/><br><br>
+  <label>참여자 ID 목록:</label><br>
+  <input type="text" name="participantUserIdList" placeholder="user01,user02"/><br><br>
 
   <button type="submit">다음 단계 →</button>
 </form>
 
-<script>
-  document.querySelector("form").addEventListener("submit", function (e) {
-    const input = document.getElementById("participantInput").value;
-    const ids = input.split(",").map(i => i.trim()).filter(Boolean);
-    document.getElementById("participantUserIdxList").value = ids.join(",");
-  });
-</script>
 </body>
 </html>
