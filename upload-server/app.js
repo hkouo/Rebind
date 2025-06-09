@@ -24,8 +24,15 @@ app.put('/upload', (req, res) => {
   const writeStream = fs.createWriteStream(targetPath);
   req.pipe(writeStream);
 
-  req.on('end', () => {
+  // 파일 스트림이 완전히 종료된 후 응답을 반환
+  writeStream.on('finish', () => {
     res.status(200).json({ message: '파일 저장 성공', filename });
+  });
+
+  // 업로드 과정에서 발생한 오류 처리
+  writeStream.on('error', (err) => {
+    console.error('파일 저장 실패:', err);
+    res.status(500).json({ error: '파일 저장 실패', detail: err.message });
   });
 
   req.on('error', (err) => {
